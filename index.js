@@ -16,16 +16,15 @@ app.post("/webhook", async (req, res) => {
     const incomingMessage = req.body.Body;
     const from = req.body.From;
 
-    // שליחה ל-AI
+    // פנייה ל-Groq (חינם)
     const aiResponse = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
+      "https://api.groq.com/openai/v1/chat/completions",
       {
-        model: "gpt-4o-mini",
+        model: "llama-3.3-70b-versatile",
         messages: [
           {
             role: "system",
-            content:
-              "אתה מחזיר אך ורק JSON. אין טקסט חופשי. בלי ייעוץ."
+            content: "אתה עוזר חכם בוואטסאפ. תענה בעברית קצרה ולעניין."
           },
           {
             role: "user",
@@ -43,25 +42,26 @@ app.post("/webhook", async (req, res) => {
 
     const aiText = aiResponse.data.choices[0].message.content;
 
-    // תשובה ללקוח
+    // שליחת התשובה לוואטסאפ
     await client.messages.create({
       body: aiText,
-      from: "whatsapp:+14155238886",
+      from: "whatsapp:+14155238886", 
       to: from
     });
 
     res.sendStatus(200);
   } catch (err) {
-    console.error(err);
+    console.error("Error:", err.response ? err.response.data : err.message);
     res.sendStatus(500);
   }
 });
 
 app.get("/", (req, res) => {
-  res.send("Bot is running");
+  res.send("Bot is running for free with Groq!");
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
+          
